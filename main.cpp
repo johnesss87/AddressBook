@@ -7,7 +7,12 @@
 using namespace std;
 
 struct User {
-    int id;
+    int idUser;
+    string login, password;
+};
+
+struct Contact {
+    int idContact, idUser;
     string name, surname, phoneNumber, email, address;
 };
 
@@ -19,39 +24,30 @@ string readLine() {
     return line;
 }
 
-int downloadAddressBook(vector <User>& users, int usersNumber) {
+void downloadUsersList(vector <User>& users) {
 
     string line, spiltLine;
     fstream file;
     User user;
 
-    file.open("AddressBook.txt", ios::in);
-    if (file.good() == true) {
+    file.open("Users.txt", ios::in);
+    if (file.good()) {
         while(getline(file,line)) {
             int switchNumber = 1;
 
-            for (int i = 0, j = 0; i < line.length(); i++) {
+            for (int i = 0, j = 0; i < (int) line.length(); i++) {
                 if (line[i] == '|') {
                     spiltLine = line.substr(j,i-j);
 
                     switch(switchNumber) {
                     case 1:
-                        user.id = atoi(spiltLine.c_str());
+                        user.idUser = atoi(spiltLine.c_str());
                         break;
                     case 2:
-                        user.name = spiltLine;
+                        user.login = spiltLine;
                         break;
                     case 3:
-                        user.surname = spiltLine;
-                        break;
-                    case 4:
-                        user.phoneNumber = spiltLine;
-                        break;
-                    case 5:
-                        user.email = spiltLine;
-                        break;
-                    case 6:
-                        user.address = spiltLine;
+                        user.password = spiltLine;
                         break;
                     }
                     j=i+1;
@@ -59,59 +55,337 @@ int downloadAddressBook(vector <User>& users, int usersNumber) {
                 }
             }
             users.push_back(user);
-            usersNumber ++;
         }
         file.close();
     }
-    return usersNumber;
 }
 
-int enterNewUser(vector <User>& users, int usersNumber) {
-    string name, surname, phoneNumber, email, address;
+void registration (vector <User>& users) {
+    string login, password;
     fstream file;
     User user;
 
-    cout << "Podaj imie nowej osoby: " << endl;
-    name = readLine();
-    cout << "Podaj nazwisko nowej osoby: " << endl;;
-    surname = readLine();
-    cout << "Podaj nr telefonu nowej osoby: " << endl;;
-    phoneNumber = readLine();
-    cout << "Podaj e-mail nowej osoby: " << endl;;
-    email = readLine();
-    cout << "Podaj adres nowej osoby: "<< endl;
-    address = readLine();
-
-    if (usersNumber != 0) {
-        user.id = users[usersNumber-1].id + 1;
-    } else {
-        user.id = 1;
+    cout << "Podaj nazwe uzytkownika: ";
+    cin >> login;
+    int i = 0;
+    while (i < (int) users.size()) {
+        if (users[i].login == login) {
+            cout << "Taki uzytkownik juz istnieje. Podaj inna nazwe uzytkownika: ";
+            cin >> login;
+            i = 0;
+        } else {
+            i++;
+        }
     }
-    user.name = name;
-    user.surname = surname;
-    user.phoneNumber = phoneNumber;
-    user.email = email;
-    user.address = address;
+    cout << "Podaj haslo: ";
+    cin >> password;
+    user.login = login;
+    user.password = password;
+    user.idUser = users.size() + 1;
 
     users.push_back(user);
 
+    file.open("Users.txt", ios::out | ios::app);
+
+    file << user.idUser << "|" << user.login << "|" << user.password << "|" << endl;
+
+    file.close();
+
+    cout << "Konto zalozono pomyslnie!" << endl;
+    system("pause");
+}
+
+void downloadAddressBook(vector <Contact>& contacts, int idLoggedUser) {
+
+    string line, spiltLine;
+    fstream file;
+    Contact contact;
+
+    file.open("AddressBook.txt", ios::in);
+    if (file.good()) {
+        while(getline(file,line)) {
+            int switchNumber = 1;
+
+            for (int i = 0, j = 0; i < (int) line.length(); i++) {
+                if (line[i] == '|') {
+                    spiltLine = line.substr(j,i-j);
+
+                    switch(switchNumber) {
+                    case 1:
+                        contact.idContact = atoi(spiltLine.c_str());
+                        break;
+                    case 2:
+                        contact.idUser = atoi(spiltLine.c_str());
+                        break;
+                    case 3:
+                        contact.name = spiltLine;
+                        break;
+                    case 4:
+                        contact.surname = spiltLine;
+                        break;
+                    case 5:
+                        contact.phoneNumber = spiltLine;
+                        break;
+                    case 6:
+                        contact.email = spiltLine;
+                        break;
+                    case 7:
+                        contact.address = spiltLine;
+                        break;
+                    }
+                    j=i+1;
+                    switchNumber++;
+                }
+            }
+            if(contact.idUser == idLoggedUser) {
+                contacts.push_back(contact);
+            }
+        }
+        file.close();
+    }
+}
+
+int latestIdNumberControlInFile() {
+
+    string line, spiltLine;
+    fstream file;
+    int latestIdContactNumberInFile = 0;
+
+    file.open("AddressBook.txt", ios::in);
+    if (file.good()) {
+        while(getline(file,line)) {
+            int switchNumber = 1;
+
+            for (int i = 0, j = 0; i < (int) line.length(); i++) {
+                if (line[i] == '|') {
+                    spiltLine = line.substr(j,i-j);
+
+                    switch(switchNumber) {
+                    case 1:
+                        latestIdContactNumberInFile = atoi(spiltLine.c_str());
+                        break;
+                    case 2:
+                        break;
+                    case 3:
+                        break;
+                    case 4:
+                        break;
+                    case 5:
+                        break;
+                    case 6:
+                        break;
+                    case 7:
+                        break;
+                    }
+                    j=i+1;
+                    switchNumber++;
+                }
+            }
+        }
+        file.close();
+    }
+    return latestIdContactNumberInFile;
+}
+
+void removeContactFromFile(int idContactNumberToDelete) {
+
+    string line, spiltLine;
+    fstream file, tempFile;
+
+    file.open("AddressBook.txt", ios::in);
+    tempFile.open("Temp.txt", ios::out);
+    if (file.good()) {
+        while(getline(file,line)) {
+            int switchNumber = 1;
+            int removedLinePointer = 0;
+
+            for (int i = 0, j = 0; i < (int) line.length(); i++) {
+                if (line[i] == '|') {
+                    spiltLine = line.substr(j,i-j);
+
+                    switch(switchNumber) {
+                    case 1:
+                        if (idContactNumberToDelete == atoi(spiltLine.c_str())) {
+                            removedLinePointer = 1;
+                            break;
+                        } else {
+                            tempFile << atoi(spiltLine.c_str()) << "|";
+                            break;
+                        }
+                    case 2:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << atoi(spiltLine.c_str()) << "|";
+                            break;
+                        }
+                    case 3:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 4:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 5:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 6:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 7:
+                        if (removedLinePointer == 1) {
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|" << endl;
+                            break;
+                        }
+                    }
+                    j=i+1;
+                    switchNumber++;
+                }
+            }
+        }
+        file.close(), tempFile.close();
+        remove ("AddressBook.txt");
+        rename("Temp.txt", "AddressBook.txt");
+    }
+}
+
+void makeChangeInFile (vector <Contact>& contacts, int contactLinePointer) {
+
+    string line, spiltLine;
+    fstream file, tempFile;
+
+    file.open("AddressBook.txt", ios::in);
+    tempFile.open("Temp.txt", ios::out);
+    if (file.good()) {
+        while(getline(file,line)) {
+            int switchNumber = 1;
+            int changedLinePointer = 0;
+
+            for (int i = 0, j = 0; i < (int) line.length(); i++) {
+                if (line[i] == '|') {
+                    spiltLine = line.substr(j,i-j);
+
+                    switch(switchNumber) {
+                    case 1:
+                        tempFile << atoi(spiltLine.c_str()) << "|";
+                        if (contacts[contactLinePointer].idContact == atoi(spiltLine.c_str())) {
+                            changedLinePointer = 1;
+                        }
+                        break;
+                    case 2:
+                        tempFile << atoi(spiltLine.c_str()) << "|";
+                        break;
+                    case 3:
+                        if (changedLinePointer == 1) {
+                            tempFile << contacts[contactLinePointer].name << "|";
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 4:
+                        if (changedLinePointer == 1) {
+                            tempFile << contacts[contactLinePointer].surname << "|";
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 5:
+                        if (changedLinePointer == 1) {
+                            tempFile << contacts[contactLinePointer].phoneNumber << "|";
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 6:
+                        if (changedLinePointer == 1) {
+                            tempFile << contacts[contactLinePointer].email << "|";
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|";
+                            break;
+                        }
+                    case 7:
+                        if (changedLinePointer == 1) {
+                            tempFile << contacts[contactLinePointer].address << "|" << endl;
+                            break;
+                        } else {
+                            tempFile << spiltLine << "|" << endl;
+                            break;
+                        }
+                    }
+                    j=i+1;
+                    switchNumber++;
+                }
+            }
+        }
+        file.close(), tempFile.close();
+        remove ("AddressBook.txt");
+        rename("Temp.txt", "AddressBook.txt");
+    }
+}
+
+void enterNewContact(vector <Contact>& contacts, int idLoggedUser) {
+    fstream file;
+    Contact contact;
+
+    int latestIdContactNumberInFile = latestIdNumberControlInFile();
+
+    contact.idContact = latestIdContactNumberInFile + 1;
+    cout << "Podaj imie nowej osoby: " << endl;
+    contact.name = readLine();
+    cout << "Podaj nazwisko nowej osoby: " << endl;;
+    contact.surname = readLine();
+    cout << "Podaj nr telefonu nowej osoby: " << endl;;
+    contact.phoneNumber = readLine();
+    cout << "Podaj e-mail nowej osoby: " << endl;;
+    contact.email = readLine();
+    cout << "Podaj adres nowej osoby: "<< endl;
+    contact.address = readLine();
+    contact.idUser = idLoggedUser;
+
+    contacts.push_back(contact);
+
     file.open("AddressBook.txt", ios::out | ios::app);
 
-    file << user.id << "|" << user.name << "|" << user.surname << "|" << user.phoneNumber << "|" << user.email << "|" << user.address << "|" << endl;
+    file << contact.idContact << "|" << contact.idUser << "|" << contact.name << "|" << contact.surname << "|" << contact.phoneNumber << "|" << contact.email << "|" << contact.address << "|" << endl;
 
     file.close();
 
     cout << "Znajomy wprowadzony" << endl << endl;
     system("pause");
-    return usersNumber + 1;
 }
 
-void searchByName(vector <User>& users, int usersNumber, string searchedName) {
+void searchByName(vector <Contact>& contacts) {
     int positiveResultsNumber = 0;
+    string searchedName;
 
-    for (int i = 0; i < usersNumber; i++) {
-        if (users[i].name == searchedName) {
-            cout << users[i].id << "|" << users[i].name << "|" << users[i].surname << "|" << users[i].phoneNumber << "|" << users[i].email << "|" << users[i].address << "|" << endl;
+    cout << endl << "Podaj szukane imie: ";
+    cin >> searchedName;
+
+    cout << endl << "LISTA ADRESATOW O PODANYM IMIENIU:" << endl;
+    for (int i = 0; i < (int) contacts.size(); i++) {
+        if (contacts[i].name == searchedName) {
+            cout << contacts[i].idContact << "|" << contacts[i].name << "|" << contacts[i].surname << "|" << contacts[i].phoneNumber << "|" << contacts[i].email << "|" << contacts[i].address << "|" << endl;
             positiveResultsNumber++;
         }
     }
@@ -123,12 +397,17 @@ void searchByName(vector <User>& users, int usersNumber, string searchedName) {
     system("pause");
 }
 
-void searchBySurname(vector <User>& users, int usersNumber, string searchedSurname) {
+void searchBySurname(vector <Contact>& contacts) {
     int positiveResultsNumber = 0;
+    string searchedSurname;
 
-    for (int i = 0; i < usersNumber; i++) {
-        if (users[i].surname == searchedSurname) {
-            cout << users[i].id << "|" << users[i].name << "|" << users[i].surname << "|" << users[i].phoneNumber << "|" << users[i].email << "|" << users[i].address << "|" << endl;
+    cout << endl << "Podaj szukane nazwisko: ";
+    cin >> searchedSurname;
+
+    cout << endl << "LISTA ADRESATOW O PODANYM NAZWISKU:" <<endl;
+    for (int i = 0; i < (int) contacts.size(); i++) {
+        if (contacts[i].surname == searchedSurname) {
+            cout << contacts[i].idContact << "|" << contacts[i].name << "|" << contacts[i].surname << "|" << contacts[i].phoneNumber << "|" << contacts[i].email << "|" << contacts[i].address << "|" << endl;
             positiveResultsNumber++;
         }
     }
@@ -139,168 +418,287 @@ void searchBySurname(vector <User>& users, int usersNumber, string searchedSurna
     system("pause");
 }
 
-void showWholeAdrressBook(vector <User>& users, int usersNumber) {
-    if (usersNumber == 0) {
+void showWholeAdrressBook(vector <Contact>& contacts) {
+
+    cout << "LISTA WSZYSTKICH ADRESATOW:" << endl;
+    if (contacts.size() == 0) {
         cout << "Ksiazka Adresowa jest pusta" << endl;
     }
-
-    for (int i = 0; i < usersNumber; i++) {
-        cout << users[i].id << "|" << users[i].name << "|" << users[i].surname << "|" << users[i].phoneNumber << "|" << users[i].email << "|" << users[i].address << "|" << endl;
+    for (int i = 0; i < (int) contacts.size(); i++) {
+        cout << contacts[i].idContact << "|" << contacts[i].name << "|" << contacts[i].surname << "|" << contacts[i].phoneNumber << "|" << contacts[i].email << "|" << contacts[i].address << "|" << endl;
     }
     cout << endl;
     system("pause");
 }
 
-int deleteUserFromAdrressBook(vector <User>& users, int usersNumber, int idNumberToDelete) {
+void deleteContactFromAdrressBook(vector <Contact>& contacts) {
     char confirmButton;
-    int idExistenceCheckPointer = usersNumber;
+    int idContactNumberToDelete = 0;
+    int idContactExistenceCheckPointer = contacts.size();
 
     fstream file;
 
-    for (int i = 0; i < usersNumber; i++) {
-        if (users[i].id == idNumberToDelete) {
-            cout << "Adresat o podanym ID istnieje. Wcisnij 't' dla potwierdzenia operacji usuwania" << endl;
-            cin >> confirmButton;
+    if (contacts.size() == 0) {
+        cout << "Ksiazka Adresowa jest pusta, nie ma mozliwosci usuniecia adresata" << endl << endl;
+        system("pause");
+    } else {
+        cout << "Podaj ID adresata ktorego chcesz usunac: " << endl;
+        cin >> idContactNumberToDelete;
 
-            if (confirmButton == 't') {
-                for (int j=i; j < usersNumber; j++) {
-                    users[j].id = users[j+1].id;
-                    users[j].name = users[j+1].name;
-                    users[j].surname = users[j+1].surname;
-                    users[j].phoneNumber = users[j+1].phoneNumber;
-                    users[j].email = users[j+1].email;
-                    users[j].address = users[j+1].address;
+        for (int i = 0; i < contacts.size(); i++) {
+            if (contacts[i].idContact == idContactNumberToDelete) {
+                cout << "Adresat o podanym ID istnieje. Wcisnij 't' dla potwierdzenia operacji usuwania" << endl;
+                cin >> confirmButton;
+                if (confirmButton == 't') {
+                    contacts.erase(contacts.begin() + i);
+
+                    removeContactFromFile(idContactNumberToDelete);
+
+                    cout << "Adresat o podanym ID zostal usunietny" << endl;
+
+                } else {
+                    cout << "Adreast o podanym ID nie zostal usuniety" << endl;
                 }
-                usersNumber--;
-                users.pop_back();
+            }
+        }
+        if (idContactExistenceCheckPointer == contacts.size()) {
+            cout << "Adresat o podanym ID nie istnieje" << endl;
+        }
+        cout << endl;
+        system("pause");
+    }
+}
 
-                file.open("AddressBook.txt", ios::out);
+void makeChangeToExistingContact(vector <Contact>& contacts) {
+    int idContactNumberToChange = 0;
+    int idContactExistenceCheckPointer = 0;
+    int contactLinePointer = 0;
+    char choice;
+    fstream file;
 
-                for (int i = 0; i < usersNumber; i++) {
-                    file << users[i].id << "|" << users[i].name << "|" << users[i].surname << "|" << users[i].phoneNumber << "|" << users[i].email << "|" << users[i].address << "|" << endl;
+    if (contacts.size() == 0) {
+        cout << "Ksiazka Adresowa jest pusta, nie ma mozliwosci zmiany danych adresata" << endl << endl;
+        system("pause");
+    } else {
+        cout << "Podaj ID adresata ktorego dane chcesz zmienic: " << endl;
+        cin >> idContactNumberToChange;
+
+        for (int i = 0; i < contacts.size(); i++) {
+            if (contacts[i].idContact == idContactNumberToChange) {
+                contactLinePointer = i;
+
+                while(choice != '6') {
+                    system("cls");
+                    cout << endl;
+                    cout << "MENU EDYCJI" << endl;
+                    cout << "****************************" << endl;
+                    cout << "1. Imie" << endl;
+                    cout << "2. Nazwisko" << endl;
+                    cout << "3. Numer Telefonu" << endl;
+                    cout << "4. Email" << endl;
+                    cout << "5. Adres" << endl;
+                    cout << "****************************" << endl;
+                    cout << "6. Powrot do poprzedniego menu" << endl;
+                    cout << endl;
+
+                    choice = getch();
+
+                    switch(choice) {
+                    case '1':
+                        cout << "Podaj nowe imie: " << endl;
+                        contacts[i].name = readLine();
+                        cout << "Imie zostalo zmienione pomyslnie" << endl;
+                        system("pause");
+                        break;
+                    case '2':
+                        cout << "Podaj nowe nazwisko: " << endl;
+                        contacts[i].surname = readLine();
+                        cout << "Nazwisko zostalo zmienione pomyslnie" << endl << endl;
+                        system("pause");
+                        break;
+                    case '3':
+                        cout << "Podaj nowy Numer Telefonu: " << endl;
+                        contacts[i].phoneNumber = readLine();
+                        cout << "Numer Telefonu zostal zmieniony pomyslnie" << endl << endl;
+                        system("pause");
+                        break;
+                    case '4':
+                        cout << "Podaj nowy Email: " << endl;
+                        contacts[i].email = readLine();
+                        cout << "Emial zostal zmieniony pomyslnie" << endl << endl;
+                        system("pause");
+                        break;
+                    case '5':
+                        cout << "Podaj nowy adres: " << endl;
+                        contacts[i].address = readLine();
+                        cout << "Adres zostal zmieniony pomyslnie" << endl << endl;
+                        system("pause");
+                        break;
+                    case '6':
+                        cout << "Wracasz do poprzedniego menu" << endl << endl;
+                        break;
+                    default:
+                        cout << "Nie ma takiej opcji w menu!!!" << endl << endl;
+                        system("pause");
+                    }
                 }
-                file.close();
-                cout << "Adresat o podanym ID zostal usunietny" << endl;
-
             } else {
-                cout << "Adreast o podanym ID nie zostal usuniety" << endl;
+                idContactExistenceCheckPointer++;
             }
         }
+        if (idContactExistenceCheckPointer == contacts.size()) {
+            cout << "Adresat o podanym ID nie istnieje" << endl;
+        }
+        cout << endl;
+        makeChangeInFile(contacts, contactLinePointer);
+        system("pause");
     }
-    if (idExistenceCheckPointer == usersNumber) {
-        cout << "Adresat o podanym ID nie istnieje" << endl;
-    }
-    cout << endl;
-    system("pause");
-    return usersNumber;
 }
 
-void makeChangeToExistingUser(vector <User>& users, int usersNumber, int idNumberToDelete) {
-    string name, surname, phoneNumber, email, address;
-    int idExistenceCheckPointer = 0;
+void passwordChange(vector <User>& users, int idLoggedUser) {
+    string password;
     fstream file;
-
-    for (int i = 0; i < usersNumber; i++) {
-        if (users[i].id == idNumberToDelete) {
-
-            char choice;
-
-            while(choice != '6') {
-                system("cls");
-                cout << endl;
-                cout << "MENU EDYCJI" << endl;
-                cout << "*****************" << endl;
-                cout << "1. Imie" << endl;
-                cout << "2. Nazwisko" << endl;
-                cout << "3. Numer Telefonu" << endl;
-                cout << "4. Email" << endl;
-                cout << "5. Adres" << endl;
-                cout << "6. Powrot do menu glownego" << endl;
-                cout << endl;
-
-                choice = getch();
-
-                switch(choice) {
-                case '1':
-                    cout << "Podaj nowe imie: " << endl;
-                    name = readLine();
-                    users[i].name = name;
-                    cout << "Imie zostalo zmienione pomyslnie" << endl;
-                    system("pause");
-                    break;
-                case '2':
-                    cout << "Podaj nowe nazwisko: " << endl;
-                    surname = readLine();
-                    users[i].surname = surname;
-                    cout << "Nazwisko zostalo zmienione pomyslnie" << endl << endl;
-                    system("pause");
-                    break;
-                case '3':
-                    cout << "Podaj nowy Numer Telefonu: " << endl;
-                    phoneNumber = readLine();
-                    users[i].phoneNumber = phoneNumber;
-                    cout << "Numer Telefonu zostal zmieniony pomyslnie" << endl << endl;
-                    system("pause");
-                    break;
-                case '4':
-                    cout << "Podaj nowy Email: " << endl;
-                    email = readLine();
-                    users[i].email = email;
-                    cout << "Emial zostal zmieniony pomyslnie" << endl << endl;
-                    system("pause");
-                    break;
-                case '5':
-                    cout << "Podaj nowy adres: " << endl;
-                    address = readLine();
-                    users[i].address = address;
-                    cout << "Adres zostal zmieniony pomyslnie" << endl << endl;
-                    system("pause");
-                    break;
-                case '6':
-                    cout << "Wracasz do glownego manu" << endl << endl;
-                    break;
-                default:
-                    cout << "Nie ma takiej opcji w menu!!!" << endl << endl;
-                    system("pause");
-                }
-            }
-            file.open("AddressBook.txt", ios::out);
-
-            for (int i = 0; i < usersNumber; i++) {
-                file << users[i].id << "|" << users[i].name << "|" << users[i].surname << "|" << users[i].phoneNumber << "|" << users[i].email << "|" << users[i].address << "|" << endl;
-            }
-            file.close();
-        } else {
-            idExistenceCheckPointer++;
-        }
-    }
-    if (idExistenceCheckPointer == usersNumber) {
-        cout << "Adresat o podanym ID nie istnieje" << endl;
-    }
-    cout << endl;
-    system("pause");
-}
-
-int main() {
-
-    vector <User> users;
-    int usersNumber = 0, idNumberToDelete = 0, idNumberToChange = 0;
-    string searchedName, searchedSurname;
     char choice;
 
-    usersNumber = downloadAddressBook(users, usersNumber);
+    system("cls");
+    cout << endl;
+    cout << "ZMIANA HASLA" << endl;
+    cout << "*****************" << endl;
+    cout << "1. Zmiana hasla" << endl;
+    cout << "9. Wroc do poprzedniego menu" << endl;
+    cout << endl;
 
-    while(true) {
+    choice = getch();
+    switch(choice) {
+    case '1':
+        cout << "Podaj nowe haslo: ";
+        cin >> password;
+        for (int i = 0; i < users.size(); i++) {
+            if (users[i].idUser == idLoggedUser) {
+                users[i].password = password;
+                cout << "Haslo zostalo zmienione pomyslnie!" << endl;
+
+                file.open("Users.txt", ios::out);
+                for (int i = 0; i < users.size(); i++) {
+                    file << users[i].idUser << "|" << users[i].login << "|" << users[i].password << "|" << endl;
+                }
+                file.close();
+
+                system("pause");
+            }
+        }
+        break;
+    case '9':
+        cout << "Wracasz do poprzedniego menu" << endl << endl;
+        break;
+    default:
+        cout << "Nie ma takiej opcji w menu!!!" << endl << endl;
+        system("pause");
+    }
+}
+
+void addressBookMenu(vector <User>& users, int idLoggedUser) {
+
+    vector <Contact> contacts;
+    char choice;
+
+    downloadAddressBook(contacts, idLoggedUser);
+
+    while(choice != '9') {
         system("cls");
         cout << endl;
         cout << "KSIAZKA ADRESOWA" << endl;
-        cout << "*****************" << endl;
+        cout << "****************************" << endl;
         cout << "1. Dodaj adresata" << endl;
         cout << "2. Wyszukaj po imieniu" << endl;
         cout << "3. Wyszukaj po nazwisku" << endl;
         cout << "4. Wyswietl wszystkich adresatow" << endl;
         cout << "5. Usun adresata" << endl;
         cout << "6. Edytuj adresata" << endl;
+        cout << "****************************" << endl;
+        cout << "7. Zmiana hasla uzytkownika" << endl;
+        cout << "****************************" << endl;
+        cout << "9. Wyloguj sie" << endl;
+        cout << endl;
+
+        choice = getch();
+
+        switch(choice) {
+        case '1':
+            enterNewContact(contacts, idLoggedUser);
+            break;
+        case '2':
+            searchByName(contacts);
+            break;
+        case '3':
+            searchBySurname(contacts);
+            break;
+        case '4':
+            showWholeAdrressBook(contacts);
+            break;
+        case '5':
+            deleteContactFromAdrressBook(contacts);
+            break;
+        case '6':
+            makeChangeToExistingContact(contacts);
+            break;
+        case '7':
+            passwordChange(users, idLoggedUser);
+            break;
+        case '9':
+            cout << "Zostales wylogowany" << endl << endl;
+            system("pause");
+            break;
+        default:
+            cout << "Nie ma takiej opcji w menu!!!" << endl << endl;
+            system("pause");
+        }
+    }
+}
+
+void loginOperation(vector <User>& users) {
+    string login, password;
+
+    cout << "Podaj nazwe: ";
+    cin >> login;
+    int i = 0;
+    while (i < users.size()) {
+        if (users[i].login == login) {
+            for (int attempts = 0; attempts < 3; attempts++) {
+                cout << "Podaj haslo. Pozostalo prob " << 3 - attempts << ": ";
+                cin >> password;
+                if (users[i].password == password) {
+                    cout << "Zalogowales sie pomyslnie!" << endl;
+                    system("pause");
+                    addressBookMenu(users, users[i].idUser);
+                    return;
+                }
+            }
+            cout << "Podales 3 razy bledne haslo. Poczekaj 3 sekundy przed kolejna proba" << endl;
+            Sleep(3000);
+        }
+        i++;
+    }
+    cout << "Nie istnieje uzytkownik o podanym loginie" << endl;
+    system("pause");
+}
+
+int main() {
+
+    vector <User> users;
+    char choice;
+
+    downloadUsersList(users);
+
+    while(true) {
+
+        system("cls");
+        cout << endl;
+        cout << "LOGOWANIE" << endl;
+        cout << "****************************" << endl;
+        cout << "1. Rejestracja" << endl;
+        cout << "2. Logowanie" << endl;
+        cout << "****************************" << endl;
         cout << "9. Zakoncz program" << endl;
         cout << endl;
 
@@ -308,48 +706,14 @@ int main() {
 
         switch(choice) {
         case '1':
-            usersNumber = enterNewUser(users, usersNumber);
+            registration(users);
             break;
         case '2':
-            cout << endl << "Podaj szukane imie: ";
-            cin >> searchedName;
-            cout << endl << "LISTA ADRESATOW O PODANYM IMIENIU:" << endl;
-            searchByName(users, usersNumber, searchedName);
-            break;
-        case '3':
-            cout << endl << "Podaj szukane nazwisko: ";
-            cin >> searchedSurname;
-            cout << endl << "LISTA ADRESATOW O PODANYM NAZWISKU:" <<endl;
-            searchBySurname(users, usersNumber, searchedSurname);
-            break;
-        case '4':
-            cout << "LISTA WSZYSTKICH ADRESATOW:" << endl;
-            showWholeAdrressBook(users, usersNumber);
-            break;
-        case '5':
-            if (usersNumber == 0) {
-                cout << "Ksiazka Adresowa jest pusta, nie ma mozliwosci usuniecia adresata" << endl << endl;
-                system("pause");
-            } else {
-                cout << "Podaj ID adresata ktorego chcesz usunac: " << endl;
-                cin >> idNumberToDelete;
-                usersNumber = deleteUserFromAdrressBook(users, usersNumber, idNumberToDelete);
-            }
-            break;
-        case '6':
-            if (usersNumber == 0) {
-                cout << "Ksiazka Adresowa jest pusta, nie ma mozliwosci usuniecia adresata" << endl << endl;
-                system("pause");
-            } else {
-                cout << "Podaj ID adresata ktorego dane chcesz zmienic: " << endl;
-                cin >> idNumberToChange;
-                makeChangeToExistingUser(users, usersNumber, idNumberToChange);
-            }
+            loginOperation(users);
             break;
         case '9':
             exit(0);
             break;
-
         default:
             cout << "Nie ma takiej opcji w menu!!!" << endl << endl;
             system("pause");
